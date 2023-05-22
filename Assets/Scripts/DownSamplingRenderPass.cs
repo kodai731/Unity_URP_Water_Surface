@@ -20,16 +20,15 @@ public class DownSamplingRenderPass : ScriptableRenderPass
     execute
     */
     public override void Execute(ScriptableRenderContext context, ref RenderingData rd){
-        //_currentTarget = colorAttachments[0];
-        Debug.Log("current target = " + _currentTarget.ToString());
+        // Debug.Log("current target = " + _currentTarget.ToString());
         var cmd = CommandBufferPool.Get(_commandBufferName);
         var cameraData = rd.cameraData;
         int width = cameraData.camera.scaledPixelWidth / _downSample;
         int height = cameraData.camera.scaledPixelHeight / _downSample;
 
-        Debug.Log("downsample = " + _downSample.ToString());
-        Debug.Log("width = " + width.ToString());
-        Debug.Log("height = " + height.ToString());
+        // Debug.Log("downsample = " + _downSample.ToString());
+        // Debug.Log("width = " + width.ToString());
+        // Debug.Log("height = " + height.ToString());
         cmd.GetTemporaryRT(_renderTextureId, width, height, 0, FilterMode.Point, RenderTextureFormat.Default);
         cmd.Blit(_currentTarget, _renderTextureId);
         cmd.Blit(_renderTextureId, _currentTarget);

@@ -8,6 +8,8 @@ Shader "WaterCubeMap"
         _Speed("Speed", Float) = 1
         _Split("Split", Range(0.1, 20.0)) = 1
         _OffsetUV("OffsetUV", Float) = 0.01
+        _Degree("Degree", Range(0.0, 360.0)) = 0
+        _DepthFactor("DepthFactor", Range(0.0, 10.0)) = 0
     }
     SubShader
     {
@@ -21,15 +23,6 @@ Shader "WaterCubeMap"
 
         //can not useded in URP
         //https://redhologerbera.hatenablog.com/entry/2022/04/01/222158
-        // GrabPass {
-            // Tags { "QUEUE"="Transparent" 
-            // "IGNOREPROJECTOR"="true" 
-            // "RenderType"="Transparent" 
-            // "SurfaceType"="Transparent"
-            // }
-
-            // "_GrabPassWaterSurface"
-        // }
 
         //distortion
         Pass{
@@ -41,7 +34,6 @@ Shader "WaterCubeMap"
             //"LightMode" = "UniversalForward"
             }
             //ZTEST Less
-            //Blend SrcAlpha OneMinusSrcAlpha
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -71,6 +63,8 @@ Shader "WaterCubeMap"
             sampler2D _HeightMap;
             sampler2D _CameraDepthTexture;
             sampler2D _CameraOpaqueTexture;
+            float _Degree;
+            float _Speed;
 
             v2f vert (appdata v)
             {
@@ -84,7 +78,13 @@ Shader "WaterCubeMap"
             }
 
             fixed4 frag (v2f i) : SV_Target{
-                float2 distortion = sin(i.uv.y * 50 + _Time.w) * 0.1f;
+                float preY = cos(i.uv.y * 50 + _Time.w * _Speed * 0.5);
+                float preX = cos(i.uv.x * 50 + _Time.w * _Speed * 0.5);
+                float pre = cos((float(i.uv.y) / float(i.uv.x)) + _Time.w * _Speed * 0.5);
+                float amp = tan(float(i.uv.y) / (float(i.uv.x)) + 1);
+                float2 distortion = float2(0, preY) * 0.025f;
+                distortion = Rotate2((_Degree / 180.0) * 3.1415, distortion);
+                float2 rotatePos = Rotate2((_Degree / 180.0) * 3.1415, i.grabPos.xy);
                 float2 distortionUV = (i.grabPos.xy + distortion) / i.grabPos.w;
                 fixed4 color = tex2D(_CameraOpaqueTexture, distortionUV);
                 color.w = 0.8;
@@ -105,7 +105,6 @@ Shader "WaterCubeMap"
             "LightMode" = "UniversalForward"
             }
             //ZTEST Less
-            //Blend SrcAlpha OneMinusSrcAlpha
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -129,7 +128,7 @@ Shader "WaterCubeMap"
                 float3 normal : TEXCOORD2;
                 float3 tangent : TEXCOORD3;
                 float3 binormal : TEXCOORD4;
-                //float4 grabPos : TEXCOORD5;
+                float4 screenPos : TEXCOORD5;
                 //UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
             };
@@ -143,6 +142,7 @@ Shader "WaterCubeMap"
             float _Speed;
             float _Split;
             float _OffsetUV;
+            float _DepthFactor;
 
             v2f vert (appdata v)
             {
@@ -154,6 +154,7 @@ Shader "WaterCubeMap"
                 o.tangent = normalize(mul(unity_ObjectToWorld, v.tangent)).xyz;
                 o.binormal = cross(v.normal, v.tangent.xyz) * v.tangent.w;
                 o.binormal = normalize(mul(unity_ObjectToWorld, o.binormal));
+                o.screenPos = ComputeScreenPos(o.vertex) + cos(_Time.w * _Speed) * 0.1;
                 //o.grabPos = v.vertex;
                 //UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
@@ -174,7 +175,16 @@ Shader "WaterCubeMap"
                 float4 col = UNITY_SAMPLE_TEXCUBE(_Cube, refDir);
                 // apply fog
                 //UNITY_APPLY_FOG(i.fogCoord, col);
-                return float4(col.xyz, 0.8);
+                /*
+                bound effect
+                but not water surface colored
+                */
+                // float4 depthSample = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, UNITY_PROJ_COORD(i.screenPos));
+                // half depth = LinearEyeDepth(depthSample);
+                // half screenDepth = depth - i.screenPos.w;
+                // float foamLine = 1 - saturate(screenDepth * _DepthFactor);
+                // fixed4 col2 = lerp(col, fixed4(1, 0, 0, 1), foamLine);
+                return float4(col.xyz, 0.7);
             }
             ENDHLSL
         }

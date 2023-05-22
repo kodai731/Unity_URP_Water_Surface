@@ -156,6 +156,8 @@ Material:
     - _ColorMode: 0
     - _Cull: 2
     - _Cutoff: 0.5
+    - _Degree: 0
+    - _DepthFactor: 3
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DistortionBlend: 0.5
@@ -197,7 +199,7 @@ Material:
     - _SoftParticlesFarFadeDistance: 1
     - _SoftParticlesNearFadeDistance: 0
     - _SpecularHighlights: 1
-    - _Speed: 1
+    - _Speed: 0.8
     - _SpeedX: 1
     - _SpeedZ: 1
     - _Split: 4.71

@@ -25,6 +25,7 @@ Shader "WaterCubeMap"
         //https://redhologerbera.hatenablog.com/entry/2022/04/01/222158
 
         //distortion
+        
         Pass{
             Name "WaterSurface1"
             Tags { "QUEUE"="Transparent" 
@@ -60,8 +61,6 @@ Shader "WaterCubeMap"
             };
 
             UNITY_DECLARE_TEXCUBE(_Cube);
-            sampler2D _HeightMap;
-            sampler2D _CameraDepthTexture;
             sampler2D _CameraOpaqueTexture;
             float _Degree;
             float _Speed;
@@ -93,7 +92,7 @@ Shader "WaterCubeMap"
             ENDHLSL
 
         }
-
+        
         //water surface
         Pass
         {

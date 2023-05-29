@@ -1,7 +1,7 @@
 #ifndef _WATER_CG
 #define _WATER_CG
+#pragma enabled_cbuffer
 #include "UnityCG.cginc"
-#endif
 
 struct DirectionalLight{
     float3 lightDir;
@@ -31,3 +31,5 @@ float2 Rotate2(float rad, float2 x){
 float3 Rotate3(float rad, float3 n){
     return float3(0.0, 0.0, 0.0);
 }
+
+#endif
